@@ -81,11 +81,11 @@ class ProductsPage extends StatelessWidget {
             controller: _scrollController,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.65,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+              childAspectRatio: 0.6, // Reduced to prevent overflow
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             itemCount: state.hasReachedMax
                 ? state.products.length
                 : state.products.length + 1,
@@ -101,171 +101,180 @@ class ProductsPage extends StatelessWidget {
               return Card(
                 elevation: 4,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Image.network(
-                              product.thumbnail,
-                              height: constraints.maxHeight * 0.5,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.pink,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          Flexible(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    product.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                          // Image Section
+                          AspectRatio(
+                            aspectRatio: 1.5,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                product.thumbnail,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.pink,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    product.brand,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            FittedBox(
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    '₹${product.finalPrice.toStringAsFixed(2)}',
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.black,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  if (product.discountPercentage > 0)
-                                                    Text(
-                                                      '₹${product.price.toStringAsFixed(2)}',
-                                                      style: const TextStyle(
-                                                        color: Colors.grey,
-                                                        decoration: TextDecoration.lineThrough,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                            if (product.discountPercentage > 0)
-                                              Text(
-                                                '${product.discountPercentage.toStringAsFixed(0)}% OFF',
-                                                style: const TextStyle(
-                                                  color: Colors.green,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      BlocBuilder<CartCubit, CartState>(
-                                        builder: (context, cartState) {
-                                          // Use the new getProductQuantity method
-                                            final productQuantity = cartCubit.getProductQuantity(product.id);
-
-                                          return SizedBox(
-                                            width: 100,
-                                            child: productQuantity > 0
-                                                ? Row(
-                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                    children: [
-                                                      IconButton(
-                                                        icon: const Icon(Icons.remove_circle, color: Colors.pink),
-                                                        onPressed: () {
-                                                          cartCubit.removeFromCart(product);
-                                                        },
-                                                      ),
-                                                      Text(
-                                                        '$productQuantity',
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 16,
-                                                        ),
-                                                      ),
-                                                      IconButton(
-                                                        icon: const Icon(Icons.add_circle, color: Colors.pink),
-                                                        onPressed: () {
-                                                          cartCubit.addToCart(product);
-                                                        },
-                                                      ),
-                                                    ],
-                                                  )
-                                                : ElevatedButton(
-                                                    onPressed: () {
-                                                      cartCubit.addToCart(product);
-                                                      _showCustomSnackBar(context, product);
-                                                    },
-                                                    style: ElevatedButton.styleFrom(
-                                                      backgroundColor: Colors.pink[400],
-                                                      shape: RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.circular(10),
-                                                      ),
-                                                      padding: const EdgeInsets.symmetric(
-                                                        horizontal: 12,
-                                                        vertical: 8,
-                                                      ),
-                                                    ),
-                                                    child: const Text(
-                                                      'Add',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 12,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                  );
+                                },
                               ),
                             ),
                           ),
+                          
+                          // Product Title
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              product.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          
+                          // Brand
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              product.brand,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          
+                          // Price Section
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '₹${product.finalPrice.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        if (product.discountPercentage > 0)
+                                          Text(
+                                            '₹${product.price.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                              decoration: TextDecoration.lineThrough,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    if (product.discountPercentage > 0)
+                                      Text(
+                                        '${product.discountPercentage.toStringAsFixed(0)}% OFF',
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Cart Action
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: BlocBuilder<CartCubit, CartState>(
+                              builder: (context, cartState) {
+                                final productQuantity = cartCubit.getProductQuantity(product.id);
+
+                                return productQuantity > 0
+                                    ? Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            constraints: const BoxConstraints(maxWidth: 24, maxHeight: 24),
+                                            padding: EdgeInsets.zero,
+                                            icon: const Icon(Icons.remove_circle, color: Colors.pink, size: 20),
+                                            onPressed: () {
+                                              cartCubit.removeFromCart(product);
+                                            },
+                                          ),
+                                          Text(
+                                            '$productQuantity',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            constraints: const BoxConstraints(maxWidth: 24, maxHeight: 24),
+                                            padding: EdgeInsets.zero,
+                                            icon: const Icon(Icons.add_circle, color: Colors.pink, size: 20),
+                                            onPressed: () {
+                                              cartCubit.addToCart(product);
+                                            },
+                                          ),
+                                        ],
+                                      )
+                                    : SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            cartCubit.addToCart(product);
+                                            _showCustomSnackBar(context, product);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.pink[400],
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Add to Cart',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                              },
+                            ),
+                          ),
                         ],
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               );
             },
@@ -275,7 +284,7 @@ class ProductsPage extends StatelessWidget {
     );
   }
 
-  // Custom SnackBar method
+  // Custom SnackBar method remains the same
   void _showCustomSnackBar(BuildContext context, Product product) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -294,7 +303,6 @@ class ProductsPage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                // Implement navigation to cart or perform cart-related action
                 Navigator.pushNamed(context, '/cart');
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
               },
