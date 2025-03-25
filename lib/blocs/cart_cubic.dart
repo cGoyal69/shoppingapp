@@ -28,13 +28,34 @@ class CartCubit extends Cubit<CartState> {
   }
 
   void removeFromCart(Product product) {
-    final updatedItems = List<Product>.from(state.items)
-      ..removeWhere((p) => p.id == product.id);
-    emit(CartState(items: updatedItems));
+    final existingProductIndex = state.items.indexWhere((p) => p.id == product.id);
+
+    if (existingProductIndex != -1) {
+      final updatedItems = List<Product>.from(state.items);
+      if (updatedItems[existingProductIndex].quantity > 1) {
+        updatedItems[existingProductIndex] = updatedItems[existingProductIndex].copyWith(
+          quantity: updatedItems[existingProductIndex].quantity - 1,
+        );
+      } else {
+        updatedItems.removeAt(existingProductIndex);
+      }
+      emit(CartState(items: updatedItems));
+    }
+  }
+
+  /// **Returns the quantity of a product in the cart**
+  int getProductQuantity(int productId) {
+    final product = state.items.firstWhere(
+      (p) => p.id == productId,
+      orElse: () => Product(
+        id: -1, title: '', price: 0, discountPercentage: 0, thumbnail: '', brand: '',
+      ),
+    );
+    return product.id == -1 ? 0 : product.quantity;
   }
 }
 
-// Extension method to create a copy of Product with optional quantity update
+/// **Extension method for copying `Product` with a modified quantity**
 extension ProductCopyWith on Product {
   Product copyWith({int? quantity}) {
     return Product(
@@ -44,7 +65,7 @@ extension ProductCopyWith on Product {
       discountPercentage: discountPercentage,
       thumbnail: thumbnail,
       quantity: quantity ?? this.quantity,
-      brand: brand
+      brand: brand,
     );
   }
 }

@@ -197,38 +197,64 @@ class ProductsPage extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      SizedBox(
-                                        width: 70,
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            cartCubit.addToCart(product);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('${product.title} added to cart'),
-                                                duration: const Duration(seconds: 2),
-                                                backgroundColor: Colors.pink[400],
-                                              ),
-                                            );
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.pink[400],
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 8,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'Add',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
+                                      BlocBuilder<CartCubit, CartState>(
+                                        builder: (context, cartState) {
+                                          // Use the new getProductQuantity method
+                                            final productQuantity = cartCubit.getProductQuantity(product.id);
+
+                                          return SizedBox(
+                                            width: 100,
+                                            child: productQuantity > 0
+                                                ? Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      IconButton(
+                                                        icon: const Icon(Icons.remove_circle, color: Colors.pink),
+                                                        onPressed: () {
+                                                          cartCubit.removeFromCart(product);
+                                                        },
+                                                      ),
+                                                      Text(
+                                                        '$productQuantity',
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: const Icon(Icons.add_circle, color: Colors.pink),
+                                                        onPressed: () {
+                                                          cartCubit.addToCart(product);
+                                                        },
+                                                      ),
+                                                    ],
+                                                  )
+                                                : ElevatedButton(
+                                                    onPressed: () {
+                                                      cartCubit.addToCart(product);
+                                                      _showCustomSnackBar(context, product);
+                                                    },
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.pink[400],
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(10),
+                                                      ),
+                                                      padding: const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 8,
+                                                      ),
+                                                    ),
+                                                    child: const Text(
+                                                      'Add',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),
@@ -245,6 +271,50 @@ class ProductsPage extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  // Custom SnackBar method
+  void _showCustomSnackBar(BuildContext context, Product product) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.shopping_cart, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '${product.title} added to cart',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                // Implement navigation to cart or perform cart-related action
+                Navigator.pushNamed(context, '/cart');
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+              child: const Text(
+                'View Cart',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 3),
+        backgroundColor: Colors.pink[600],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(10),
       ),
     );
   }
